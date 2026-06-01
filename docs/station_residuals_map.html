@@ -164,6 +164,86 @@
     .tt-val { font-weight: 600; }
     .tt-resid-pos { color: #60a5fa; }
     .tt-resid-neg { color: #f87171; }
+
+    /* ランキングパネル */
+    #ranking-panel {
+      position: absolute;
+      top: 12px;
+      left: 10px;
+      z-index: 1000;
+      width: 260px;
+      max-height: calc(100dvh - 120px);
+      background: rgba(13,17,23,0.96);
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    #ranking-panel.open { display: flex; }
+    .ranking-header {
+      padding: 10px 12px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #f0f6fc;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .ranking-header span { color: #8b949e; font-size: 0.68rem; font-weight: 400; }
+    .ranking-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+    .ranking-list::-webkit-scrollbar { width: 4px; }
+    .ranking-list::-webkit-scrollbar-track { background: transparent; }
+    .ranking-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #161b22;
+      transition: background 0.12s;
+    }
+    .rank-item:hover { background: rgba(88,166,255,0.08); }
+    .rank-item.highlighted { background: rgba(88,166,255,0.15); }
+    .rank-num {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #484f58;
+      width: 1.6em;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .rank-num.top3 { color: #fbbf24; }
+    .rank-info { flex: 1; min-width: 0; }
+    .rank-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f0f6fc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rank-sub {
+      font-size: 0.65rem;
+      color: #8b949e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rank-resid {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #60a5fa;
+      flex-shrink: 0;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -188,6 +268,9 @@
       <button class="ctrl-btn"        id="bm-topo"      onclick="setBasemap('topo')">地形</button>
       <button class="ctrl-btn"        id="bm-satellite" onclick="setBasemap('satellite')">衛星</button>
     </div>
+    <div class="ctrl-group">
+      <button class="ctrl-btn" id="ranking-toggle" onclick="toggleRanking()">ランキング</button>
+    </div>
     <div class="opacity-wrap">
       <span class="ctrl-label">透明度:</span>
       <input type="range" min="10" max="100" value="85" step="5" id="opacity-slider" oninput="setOpacity(this.value)">
@@ -198,6 +281,14 @@
 
 <div id="status">データ読み込み中...</div>
 <div id="map"></div>
+
+<div id="ranking-panel">
+  <div class="ranking-header">
+    残差ランキング（暗天 TOP）
+    <span id="ranking-count"></span>
+  </div>
+  <div class="ranking-list" id="ranking-list"></div>
+</div>
 
 <div class="legend" id="legend">
   <h3 id="legend-title">残差 (SQM)</h3>
@@ -385,6 +476,47 @@ function setOpacity(val) {
   basemapOpacity = val / 100;
   document.getElementById('opacity-val').textContent = val + '%';
   if (currentBasemap) currentBasemap.setOpacity(basemapOpacity);
+}
+
+// ── ランキング ───────────────────────────────────────────────────
+let rankingBuilt = false;
+let highlightedItem = null;
+
+function buildRanking() {
+  if (rankingBuilt || !allData) return;
+  const top = [...allData]
+    .filter(d => d.resid > 0)
+    .sort((a, b) => b.resid - a.resid)
+    .slice(0, 30);
+
+  document.getElementById('ranking-count').textContent = `上位${top.length}駅`;
+  const list = document.getElementById('ranking-list');
+  list.innerHTML = top.map((d, i) => `
+    <div class="rank-item" onclick="flyToStation(${d.lat}, ${d.lon}, ${i})" data-idx="${i}">
+      <div class="rank-num ${i < 3 ? 'top3' : ''}">${i + 1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${d.station_name}</div>
+        <div class="rank-sub">${d.line_name} · ${d.nearest_hub}駅より ${d.min_dist_km} km</div>
+      </div>
+      <div class="rank-resid">+${d.resid}</div>
+    </div>
+  `).join('');
+  rankingBuilt = true;
+}
+
+function flyToStation(lat, lon, idx) {
+  map.flyTo([lat, lon], 12, { duration: 0.8 });
+  if (highlightedItem) highlightedItem.classList.remove('highlighted');
+  highlightedItem = document.querySelector(`[data-idx="${idx}"]`);
+  if (highlightedItem) highlightedItem.classList.add('highlighted');
+}
+
+function toggleRanking() {
+  const panel = document.getElementById('ranking-panel');
+  const btn = document.getElementById('ranking-toggle');
+  const open = panel.classList.toggle('open');
+  btn.classList.toggle('active', open);
+  if (open) buildRanking();
 }
 
 // ── データ読み込み ───────────────────────────────────────────────
