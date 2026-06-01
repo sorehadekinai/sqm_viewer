@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>暗天駅ランキング — 星空残差 TOP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      background: #0d1117;
+      color: #f0f6fc;
+      min-height: 100dvh;
+    }
+
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    header h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+    header p { font-size: 0.75rem; color: #8b949e; flex: 1; min-width: 0; }
+    .nav-links { display: flex; gap: 12px; margin-left: auto; }
+    .nav-links a {
+      font-size: 0.75rem;
+      color: #58a6ff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: #79c0ff; }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    .intro {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 560px) { .intro { grid-template-columns: 1fr; } }
+    .intro-item { display: flex; flex-direction: column; gap: 3px; }
+    .intro-label { font-size: 0.65rem; color: #8b949e; letter-spacing: 0.08em; text-transform: uppercase; }
+    .intro-val { font-size: 0.85rem; color: #f0f6fc; font-weight: 400; line-height: 1.5; }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .ctrl-label { font-size: 0.72rem; color: #8b949e; }
+    .ctrl-btn {
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      border: 1px solid #30363d;
+      background: transparent;
+      color: #8b949e;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ctrl-btn.active {
+      background: rgba(88,166,255,0.15);
+      border-color: #58a6ff;
+      color: #f0f6fc;
+    }
+    .count-note { font-size: 0.7rem; color: #484f58; margin-left: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    thead th {
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8b949e;
+      border-bottom: 1px solid #21262d;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    thead th:hover { color: #f0f6fc; }
+    thead th.sorted-asc::after  { content: ' ↑'; color: #58a6ff; }
+    thead th.sorted-desc::after { content: ' ↓'; color: #58a6ff; }
+    thead th.num { text-align: right; }
+    tbody tr {
+      border-bottom: 1px solid #161b22;
+      transition: background 0.1s;
+    }
+    tbody tr:hover { background: rgba(240,246,252,0.04); }
+    td {
+      padding: 9px 10px;
+      vertical-align: middle;
+    }
+    .td-rank {
+      color: #484f58;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: right;
+      width: 2em;
+    }
+    .td-rank.top3 { color: #fbbf24; }
+    .td-station { font-weight: 600; color: #f0f6fc; white-space: nowrap; }
+    .td-line { font-size: 0.7rem; color: #8b949e; white-space: nowrap; }
+    .td-hub { font-size: 0.72rem; color: #8b949e; white-space: nowrap; }
+    .td-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .resid-val {
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .resid-pos { color: #60a5fa; }
+    .resid-neg { color: #f87171; }
+
+    /* SVF バー */
+    .svf-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 90px;
+    }
+    .svf-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #21262d;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .svf-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(to right, #2563eb, #34d399);
+    }
+    .svf-num {
+      font-size: 0.72rem;
+      color: #8b949e;
+      font-variant-numeric: tabular-nums;
+      width: 3.2em;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    #loading {
+      text-align: center;
+      padding: 48px;
+      color: #8b949e;
+      font-size: 0.85rem;
+    }
+    .credits {
+      margin-top: 32px;
+      font-size: 0.65rem;
+      color: #484f58;
+      line-height: 2;
+    }
+    .credits a { color: #6e7681; text-decoration: none; }
+    .credits a:hover { color: #8b949e; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>★ 暗天駅ランキング</h1>
+  <p>残差（距離補正後のSQM）が高い駅 — 光害の少ない穴場</p>
+  <div class="nav-links">
+    <a href="station_residuals_map.html">地図で見る →</a>
+    <a href="index.html">← トップ</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="intro">
+    <div class="intro-item">
+      <span class="intro-label">残差 (resid)</span>
+      <span class="intro-val">実測SQM − 距離から予測されるSQM。<br>プラスほど「距離の割に空が暗い」穴場。</span>
+    </div>
+    <div class="intro-item">
+      <span class="intro-label">空の開け具合 (SVF)</span>
+      <span class="intro-val">Sky View Factor。0〜1 で建物・地形に遮られず<br>どれだけ空が見えるかを示す。1 が完全開天。</span>
+    </div>
+    <div class="intro-item">
+      <span class="intro-label">SQM</span>
+      <span class="intro-val">空の明るさ（mag/arcsec²）。<br>数値が大きいほど空が暗く、星が見やすい。</span>
+    </div>
+    <div class="intro-item">
+      <span class="intro-label">データ範囲</span>
+      <span class="intro-val">東京・新宿・渋谷・新橋 100km圏の鉄道駅。<br>Globe at Night SQM × 国土数値情報 駅データ。</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="ctrl-label">並び替え:</span>
+    <button class="ctrl-btn active" onclick="sortBy('resid')">残差</button>
+    <button class="ctrl-btn" onclick="sortBy('sqm')">SQM</button>
+    <button class="ctrl-btn" onclick="sortBy('svf')">SVF</button>
+    <span class="ctrl-label" style="margin-left:8px">表示:</span>
+    <button class="ctrl-btn active" onclick="setFilter('pos')">残差+のみ</button>
+    <button class="ctrl-btn" onclick="setFilter('all')">全件</button>
+    <span class="count-note" id="count-note"></span>
+  </div>
+
+  <div id="loading">データ読み込み中...</div>
+  <table id="ranking-table" style="display:none">
+    <thead>
+      <tr>
+        <th style="width:2.2em">#</th>
+        <th onclick="sortBy('station_name')">駅名 / 路線</th>
+        <th onclick="sortBy('nearest_hub')" class="num">起点駅・距離</th>
+        <th onclick="sortBy('sqm')" class="num">SQM</th>
+        <th onclick="sortBy('resid')" class="num sorted-desc">残差</th>
+        <th onclick="sortBy('svf')">SVF（空の開け具合）</th>
+        <th onclick="sortBy('elev_avg_m')" class="num">標高 m</th>
+      </tr>
+    </thead>
+    <tbody id="ranking-tbody"></tbody>
+  </table>
+
+  <div class="credits">
+    SQMデータ: <a href="https://www.globeatnight.org/" target="_blank">Globe at Night</a> ·
+    標高・SVF: <a href="https://www2.jpl.nasa.gov/srtm/" target="_blank">NASA SRTM</a> ·
+    駅データ: <a href="https://nlftp.mlit.go.jp/" target="_blank">国土数値情報（国土交通省）</a> ·
+    分析: OLS回帰（距離→SQM）による残差
+  </div>
+</div>
+
+<script>
+let allData = [];
+let currentSort = 'resid';
+let sortAsc = false;
+let currentFilter = 'pos';
+
+fetch('data/station_residuals.json.gz')
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); })
+  .then(buf => {
+    const ds = new DecompressionStream('gzip');
+    const w = ds.writable.getWriter();
+    w.write(new Uint8Array(buf)); w.close();
+    return new Response(ds.readable).text();
+  })
+  .then(text => {
+    allData = JSON.parse(text);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('ranking-table').style.display = 'table';
+    render();
+  })
+  .catch(err => {
+    document.getElementById('loading').textContent = 'エラー: ' + err.message;
+  });
+
+function sortBy(col) {
+  if (currentSort === col) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSort = col;
+    sortAsc = false;
+  }
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+  });
+  const ths = document.querySelectorAll('thead th');
+  const colIdx = ['_rank','station_name','nearest_hub','sqm','resid','svf','elev_avg_m'].indexOf(col);
+  if (colIdx >= 0) {
+    ths[colIdx].classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+  }
+  document.querySelectorAll('.ctrl-btn').forEach((b, i) => {
+    if (i < 3) b.classList.toggle('active', ['resid','sqm','svf'][i] === col);
+  });
+  render();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.ctrl-btn').forEach((b, i) => {
+    if (i >= 3) b.classList.toggle('active', ['pos','all'][i-3] === f);
+  });
+  render();
+}
+
+function render() {
+  let rows = currentFilter === 'pos' ? allData.filter(d => d.resid > 0) : [...allData];
+  rows.sort((a, b) => {
+    const va = a[currentSort] ?? '', vb = b[currentSort] ?? '';
+    return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+
+  document.getElementById('count-note').textContent = `${rows.length} 駅`;
+
+  const tbody = document.getElementById('ranking-tbody');
+  tbody.innerHTML = rows.map((d, i) => {
+    const residSign = d.resid >= 0 ? '+' : '';
+    const residClass = d.resid >= 0 ? 'resid-pos' : 'resid-neg';
+    const svfPct = Math.round((d.svf || 0) * 100);
+    const svfColor = svfPct >= 90 ? '#34d399' : svfPct >= 75 ? '#60a5fa' : '#f97316';
+    return `
+      <tr>
+        <td class="td-rank ${i < 3 ? 'top3' : ''}">${i + 1}</td>
+        <td>
+          <div class="td-station">${d.station_name}</div>
+          <div class="td-line">${d.line_name}</div>
+        </td>
+        <td class="td-hub td-num">${d.nearest_hub}駅より<br>${d.min_dist_km} km</td>
+        <td class="td-num">${d.sqm}</td>
+        <td class="td-num"><span class="resid-val ${residClass}">${residSign}${d.resid}</span></td>
+        <td>
+          <div class="svf-wrap">
+            <div class="svf-bar-bg">
+              <div class="svf-bar-fill" style="width:${svfPct}%;background:${svfColor}"></div>
+            </div>
+            <span class="svf-num">${svfPct}%</span>
+          </div>
+        </td>
+        <td class="td-num">${d.elev_avg_m}</td>
+      </tr>
+    `;
+  }).join('');
+}
+</script>
+</body>
+</html>
