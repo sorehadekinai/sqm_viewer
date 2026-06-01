@@ -323,6 +323,7 @@ const BASEMAP_DEFS = {
 };
 
 let currentBasemap = null;
+let basemapOpacity = 1.0;
 
 function setBasemap(key) {
   const def = BASEMAP_DEFS[key];
@@ -427,7 +428,6 @@ let layerGroup = null;
 let allData = null;
 let currentMode = 'resid';
 let currentOpacity = 0.85;
-let basemapOpacity = 1.0;
 
 function buildTooltip(d) {
   const sign = d.resid >= 0 ? '+' : '';
