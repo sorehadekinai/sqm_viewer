@@ -12,19 +12,22 @@
       background: #0d1117;
       color: #f0f6fc;
       min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
     }
 
+    /* ── ヘッダー ───────────────────────────────── */
     header {
       background: #161b22;
       border-bottom: 1px solid #21262d;
-      padding: 12px 20px;
+      padding: 11px 20px;
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 200;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
     header h1 {
@@ -37,69 +40,165 @@
     }
     header p { font-size: 0.75rem; color: #8b949e; flex: 1; min-width: 0; }
     .nav-links { display: flex; gap: 12px; margin-left: auto; }
-    .nav-links a {
-      font-size: 0.75rem;
-      color: #58a6ff;
-      text-decoration: none;
-      white-space: nowrap;
-    }
+    .nav-links a { font-size: 0.75rem; color: #58a6ff; text-decoration: none; white-space: nowrap; }
     .nav-links a:hover { color: #79c0ff; }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px 16px 48px;
-    }
-
-    .intro {
-      background: #161b22;
-      border: 1px solid #21262d;
-      border-radius: 10px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 560px) { .intro { grid-template-columns: 1fr; } }
-    .intro-item { display: flex; flex-direction: column; gap: 3px; }
-    .intro-label { font-size: 0.65rem; color: #8b949e; letter-spacing: 0.08em; text-transform: uppercase; }
-    .intro-val { font-size: 0.85rem; color: #f0f6fc; font-weight: 400; line-height: 1.5; }
-
-    .controls {
+    /* ── メインレイアウト ────────────────────────── */
+    .layout {
       display: flex;
-      gap: 8px;
+      flex: 1;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    /* ── フィルターサイドバー ────────────────────── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: #161b22;
+      border-right: 1px solid #21262d;
+      padding: 16px 14px 32px;
+      position: sticky;
+      top: 49px;
+      max-height: calc(100dvh - 49px);
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar { width: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+    .sidebar-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #8b949e;
+      margin-bottom: 14px;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+    }
+    .reset-all {
+      font-size: 0.62rem;
+      color: #484f58;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .reset-all:hover { color: #f87171; }
+
+    .filter-block {
+      margin-bottom: 20px;
+    }
+    .filter-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #c9d1d9;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .filter-label .f-unit { font-size: 0.6rem; color: #8b949e; font-weight: 400; }
+
+    /* 範囲スライダー */
+    .range-wrap {
+      position: relative;
+      height: 18px;
+      margin-bottom: 6px;
+    }
+    .range-track {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      height: 4px;
+      background: #30363d;
+      border-radius: 2px;
+    }
+    .range-fill {
+      position: absolute;
+      height: 100%;
+      background: #58a6ff;
+      border-radius: 2px;
+    }
+    .range-wrap input[type=range] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .range-wrap input[type=range].r-min { z-index: 3; }
+    .range-wrap input[type=range].r-max { z-index: 4; }
+    .range-wrap input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #58a6ff;
+      border: 2px solid #0d1117;
+      pointer-events: auto;
+      cursor: grab;
+    }
+    .range-wrap input[type=range]:active::-webkit-slider-thumb { cursor: grabbing; background: #79c0ff; }
+    .range-wrap input[type=range]::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #58a6ff;
+      border: 2px solid #0d1117;
+      pointer-events: auto;
+      cursor: grab;
+    }
+
+    .range-vals {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      font-variant-numeric: tabular-nums;
+      color: #8b949e;
+    }
+    .range-vals .active-val { color: #f0f6fc; font-weight: 600; }
+
+    .filter-divider { border: none; border-top: 1px solid #21262d; margin: 4px 0 20px; }
+
+    /* ── メインコンテンツ ─────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 16px 18px 48px;
+    }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       margin-bottom: 12px;
       flex-wrap: wrap;
     }
-    .ctrl-label { font-size: 0.72rem; color: #8b949e; }
-    .ctrl-btn {
+    .sort-label { font-size: 0.7rem; color: #8b949e; }
+    .sort-btn {
       padding: 3px 10px;
       border-radius: 10px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       border: 1px solid #30363d;
       background: transparent;
       color: #8b949e;
       cursor: pointer;
       transition: all 0.15s;
     }
-    .ctrl-btn.active {
-      background: rgba(88,166,255,0.15);
-      border-color: #58a6ff;
-      color: #f0f6fc;
-    }
+    .sort-btn.active { background: rgba(88,166,255,0.15); border-color: #58a6ff; color: #f0f6fc; }
     .count-note { font-size: 0.7rem; color: #484f58; margin-left: auto; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
     thead th {
       padding: 8px 10px;
       text-align: left;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -113,76 +212,35 @@
     thead th.sorted-asc::after  { content: ' ↑'; color: #58a6ff; }
     thead th.sorted-desc::after { content: ' ↓'; color: #58a6ff; }
     thead th.num { text-align: right; }
-    tbody tr {
-      border-bottom: 1px solid #161b22;
-      transition: background 0.1s;
-    }
+    tbody tr { border-bottom: 1px solid #161b22; transition: background 0.1s; }
     tbody tr:hover { background: rgba(240,246,252,0.04); }
-    td {
-      padding: 9px 10px;
-      vertical-align: middle;
-    }
-    .td-rank {
-      color: #484f58;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-align: right;
-      width: 2em;
-    }
+    td { padding: 8px 10px; vertical-align: middle; }
+    .td-rank { color: #484f58; font-size: 0.72rem; font-weight: 700; text-align: right; width: 2em; }
     .td-rank.top3 { color: #fbbf24; }
     .td-station { font-weight: 600; color: #f0f6fc; white-space: nowrap; }
-    .td-line { font-size: 0.7rem; color: #8b949e; white-space: nowrap; }
-    .td-hub { font-size: 0.72rem; color: #8b949e; white-space: nowrap; }
+    .td-line { font-size: 0.68rem; color: #8b949e; }
     .td-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .resid-val {
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
+    .resid-val { font-weight: 700; font-size: 0.85rem; }
     .resid-pos { color: #60a5fa; }
     .resid-neg { color: #f87171; }
 
-    /* SVF バー */
-    .svf-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 90px;
-    }
-    .svf-bar-bg {
-      flex: 1;
-      height: 6px;
-      background: #21262d;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .svf-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      background: linear-gradient(to right, #2563eb, #34d399);
-    }
-    .svf-num {
-      font-size: 0.72rem;
-      color: #8b949e;
-      font-variant-numeric: tabular-nums;
-      width: 3.2em;
-      text-align: right;
-      flex-shrink: 0;
-    }
+    .svf-wrap { display: flex; align-items: center; gap: 6px; min-width: 90px; }
+    .svf-bar-bg { flex: 1; height: 5px; background: #21262d; border-radius: 3px; overflow: hidden; }
+    .svf-bar-fill { height: 100%; border-radius: 3px; }
+    .svf-num { font-size: 0.7rem; color: #8b949e; font-variant-numeric: tabular-nums; width: 3em; text-align: right; flex-shrink: 0; }
 
-    #loading {
-      text-align: center;
-      padding: 48px;
-      color: #8b949e;
-      font-size: 0.85rem;
-    }
-    .credits {
-      margin-top: 32px;
-      font-size: 0.65rem;
-      color: #484f58;
-      line-height: 2;
-    }
+    #loading { text-align: center; padding: 48px; color: #8b949e; font-size: 0.85rem; }
+    .no-results { text-align: center; padding: 32px; color: #484f58; font-size: 0.85rem; }
+
+    .credits { margin-top: 28px; font-size: 0.62rem; color: #484f58; line-height: 2; }
     .credits a { color: #6e7681; text-decoration: none; }
     .credits a:hover { color: #8b949e; }
+
+    @media (max-width: 640px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; position: static; max-height: none; border-right: none; border-bottom: 1px solid #21262d; }
+      .filter-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    }
   </style>
 </head>
 <body>
@@ -195,58 +253,115 @@
   </div>
 </header>
 
-<div class="container">
-  <div class="intro">
-    <div class="intro-item">
-      <span class="intro-label">残差 (resid)</span>
-      <span class="intro-val">実測SQM − 距離から予測されるSQM。<br>プラスほど「距離の割に空が暗い」穴場。</span>
+<div class="layout">
+  <!-- ── フィルターサイドバー ── -->
+  <aside class="sidebar">
+    <div class="sidebar-title">
+      絞り込み
+      <button class="reset-all" onclick="resetAll()">リセット</button>
     </div>
-    <div class="intro-item">
-      <span class="intro-label">空の開け具合 (SVF)</span>
-      <span class="intro-val">Sky View Factor。0〜1 で建物・地形に遮られず<br>どれだけ空が見えるかを示す。1 が完全開天。</span>
-    </div>
-    <div class="intro-item">
-      <span class="intro-label">SQM</span>
-      <span class="intro-val">空の明るさ（mag/arcsec²）。<br>数値が大きいほど空が暗く、星が見やすい。</span>
-    </div>
-    <div class="intro-item">
-      <span class="intro-label">データ範囲</span>
-      <span class="intro-val">東京・新宿・渋谷・新橋 100km圏の鉄道駅。<br>Globe at Night SQM × 国土数値情報 駅データ。</span>
-    </div>
-  </div>
 
-  <div class="controls">
-    <span class="ctrl-label">並び替え:</span>
-    <button class="ctrl-btn active" onclick="sortBy('resid')">残差</button>
-    <button class="ctrl-btn" onclick="sortBy('sqm')">SQM</button>
-    <button class="ctrl-btn" onclick="sortBy('svf')">SVF</button>
-    <span class="ctrl-label" style="margin-left:8px">表示:</span>
-    <button class="ctrl-btn active" onclick="setFilter('pos')">残差+のみ</button>
-    <button class="ctrl-btn" onclick="setFilter('all')">全件</button>
-    <span class="count-note" id="count-note"></span>
-  </div>
+    <div class="filter-blocks">
+      <!-- 距離 -->
+      <div class="filter-block">
+        <div class="filter-label">起点駅からの距離 <span class="f-unit">km</span></div>
+        <div class="range-wrap" id="wrap-dist">
+          <div class="range-track"><div class="range-fill" id="fill-dist"></div></div>
+          <input type="range" class="r-min" id="dist-min">
+          <input type="range" class="r-max" id="dist-max">
+        </div>
+        <div class="range-vals">
+          <span id="dist-lo" class="active-val"></span>
+          <span id="dist-hi" class="active-val"></span>
+        </div>
+      </div>
 
-  <div id="loading">データ読み込み中...</div>
-  <table id="ranking-table" style="display:none">
-    <thead>
-      <tr>
-        <th style="width:2.2em">#</th>
-        <th onclick="sortBy('station_name')">駅名 / 路線</th>
-        <th onclick="sortBy('nearest_hub')" class="num">起点駅・距離</th>
-        <th onclick="sortBy('sqm')" class="num">SQM</th>
-        <th onclick="sortBy('resid')" class="num sorted-desc">残差</th>
-        <th onclick="sortBy('svf')">SVF（空の開け具合）</th>
-        <th onclick="sortBy('elev_avg_m')" class="num">標高 m</th>
-      </tr>
-    </thead>
-    <tbody id="ranking-tbody"></tbody>
-  </table>
+      <hr class="filter-divider">
 
-  <div class="credits">
-    SQMデータ: <a href="https://www.globeatnight.org/" target="_blank">Globe at Night</a> ·
-    標高・SVF: <a href="https://www2.jpl.nasa.gov/srtm/" target="_blank">NASA SRTM</a> ·
-    駅データ: <a href="https://nlftp.mlit.go.jp/" target="_blank">国土数値情報（国土交通省）</a> ·
-    分析: OLS回帰（距離→SQM）による残差
+      <!-- SQM -->
+      <div class="filter-block">
+        <div class="filter-label">SQM <span class="f-unit">mag/arcsec²</span></div>
+        <div class="range-wrap" id="wrap-sqm">
+          <div class="range-track"><div class="range-fill" id="fill-sqm"></div></div>
+          <input type="range" class="r-min" id="sqm-min">
+          <input type="range" class="r-max" id="sqm-max">
+        </div>
+        <div class="range-vals">
+          <span id="sqm-lo" class="active-val"></span>
+          <span id="sqm-hi" class="active-val"></span>
+        </div>
+      </div>
+
+      <hr class="filter-divider">
+
+      <!-- 残差 -->
+      <div class="filter-block">
+        <div class="filter-label">残差</div>
+        <div class="range-wrap" id="wrap-resid">
+          <div class="range-track"><div class="range-fill" id="fill-resid"></div></div>
+          <input type="range" class="r-min" id="resid-min">
+          <input type="range" class="r-max" id="resid-max">
+        </div>
+        <div class="range-vals">
+          <span id="resid-lo" class="active-val"></span>
+          <span id="resid-hi" class="active-val"></span>
+        </div>
+      </div>
+
+      <hr class="filter-divider">
+
+      <!-- SVF -->
+      <div class="filter-block">
+        <div class="filter-label">空の開け具合 <span class="f-unit">SVF %</span></div>
+        <div class="range-wrap" id="wrap-svf">
+          <div class="range-track"><div class="range-fill" id="fill-svf"></div></div>
+          <input type="range" class="r-min" id="svf-min">
+          <input type="range" class="r-max" id="svf-max">
+        </div>
+        <div class="range-vals">
+          <span id="svf-lo" class="active-val"></span>
+          <span id="svf-hi" class="active-val"></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── メインコンテンツ ── -->
+  <div class="main">
+    <div id="loading">データ読み込み中...</div>
+
+    <div id="main-content" style="display:none">
+      <div class="sort-bar">
+        <span class="sort-label">並び替え:</span>
+        <button class="sort-btn active" onclick="sortBy('resid')">残差</button>
+        <button class="sort-btn" onclick="sortBy('sqm')">SQM</button>
+        <button class="sort-btn" onclick="sortBy('svf')">SVF</button>
+        <button class="sort-btn" onclick="sortBy('min_dist_km')">距離</button>
+        <span class="count-note" id="count-note"></span>
+      </div>
+
+      <table id="ranking-table">
+        <thead>
+          <tr>
+            <th style="width:2em">#</th>
+            <th onclick="sortBy('station_name')">駅名 / 路線</th>
+            <th onclick="sortBy('nearest_hub')" class="num">起点・距離</th>
+            <th onclick="sortBy('sqm')" class="num">SQM</th>
+            <th onclick="sortBy('resid')" class="num sorted-desc">残差</th>
+            <th onclick="sortBy('svf')">SVF</th>
+            <th onclick="sortBy('elev_avg_m')" class="num">標高 m</th>
+          </tr>
+        </thead>
+        <tbody id="ranking-tbody"></tbody>
+      </table>
+      <div id="no-results" class="no-results" style="display:none">条件に一致する駅がありません</div>
+
+      <div class="credits">
+        SQMデータ: <a href="https://www.globeatnight.org/" target="_blank">Globe at Night</a> ·
+        標高・SVF: <a href="https://www2.jpl.nasa.gov/srtm/" target="_blank">NASA SRTM</a> ·
+        駅データ: <a href="https://nlftp.mlit.go.jp/" target="_blank">国土数値情報（国土交通省）</a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -254,8 +369,16 @@
 let allData = [];
 let currentSort = 'resid';
 let sortAsc = false;
-let currentFilter = 'pos';
 
+// フィルター状態（データロード後に初期化）
+const F = {
+  dist:  { lo: 0, hi: 100 },
+  sqm:   { lo: 0, hi: 99  },
+  resid: { lo: -9, hi: 9  },
+  svf:   { lo: 0, hi: 100 },
+};
+
+// ── データ読み込み ─────────────────────────────────────
 fetch('data/station_residuals.json.gz?v=20260601')
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); })
   .then(buf => {
@@ -267,78 +390,131 @@ fetch('data/station_residuals.json.gz?v=20260601')
   .then(text => {
     allData = JSON.parse(text);
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('ranking-table').style.display = 'table';
+    document.getElementById('main-content').style.display = 'block';
+    initFilters();
     render();
   })
   .catch(err => {
     document.getElementById('loading').textContent = 'エラー: ' + err.message;
   });
 
+// ── フィルター初期化 ─────────────────────────────────
+function initFilters() {
+  const dists = allData.map(d => d.min_dist_km);
+  const sqms  = allData.map(d => d.sqm);
+  const resids = allData.map(d => d.resid);
+  const svfs  = allData.map(d => Math.round(d.svf * 100));
+
+  setupRange('dist',  Math.floor(Math.min(...dists)),  Math.ceil(Math.max(...dists)),  1,   v => v + ' km');
+  setupRange('sqm',   Math.floor(Math.min(...sqms)*10)/10, Math.ceil(Math.max(...sqms)*10)/10, 0.1, v => v.toFixed(1));
+  setupRange('resid', Math.floor(Math.min(...resids)*10)/10, Math.ceil(Math.max(...resids)*10)/10, 0.1, v => (v >= 0 ? '+' : '') + v.toFixed(1));
+  setupRange('svf',   Math.min(...svfs), Math.max(...svfs), 1, v => v + '%');
+}
+
+function setupRange(key, dataMin, dataMax, step, fmt) {
+  const rMin = document.getElementById(key + '-min');
+  const rMax = document.getElementById(key + '-max');
+  const fill = document.getElementById('fill-' + key);
+  const loEl = document.getElementById(key + '-lo');
+  const hiEl = document.getElementById(key + '-hi');
+
+  [rMin, rMax].forEach(r => {
+    r.min = dataMin; r.max = dataMax; r.step = step;
+  });
+  rMin.value = dataMin;
+  rMax.value = dataMax;
+  F[key].lo = dataMin;
+  F[key].hi = dataMax;
+
+  function update() {
+    let lo = parseFloat(rMin.value);
+    let hi = parseFloat(rMax.value);
+    if (lo > hi) {
+      if (this === rMin) { rMin.value = hi; lo = hi; }
+      else               { rMax.value = lo; hi = lo; }
+    }
+    const range = dataMax - dataMin || 1;
+    fill.style.left  = ((lo - dataMin) / range * 100) + '%';
+    fill.style.width = ((hi - lo)      / range * 100) + '%';
+    loEl.textContent = fmt(lo);
+    hiEl.textContent = fmt(hi);
+    F[key].lo = lo;
+    F[key].hi = hi;
+    render();
+  }
+
+  rMin.addEventListener('input', update);
+  rMax.addEventListener('input', update);
+  update.call(rMin); // 初期描画
+}
+
+function resetAll() {
+  ['dist','sqm','resid','svf'].forEach(key => {
+    const rMin = document.getElementById(key + '-min');
+    const rMax = document.getElementById(key + '-max');
+    rMin.value = rMin.min;
+    rMax.value = rMax.max;
+    rMin.dispatchEvent(new Event('input'));
+  });
+}
+
+// ── ソート ──────────────────────────────────────────
 function sortBy(col) {
-  if (currentSort === col) {
-    sortAsc = !sortAsc;
-  } else {
-    currentSort = col;
-    sortAsc = false;
-  }
-  document.querySelectorAll('thead th').forEach(th => {
-    th.classList.remove('sorted-asc', 'sorted-desc');
-  });
-  const ths = document.querySelectorAll('thead th');
-  const colIdx = ['_rank','station_name','nearest_hub','sqm','resid','svf','elev_avg_m'].indexOf(col);
-  if (colIdx >= 0) {
-    ths[colIdx].classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
-  }
-  document.querySelectorAll('.ctrl-btn').forEach((b, i) => {
-    if (i < 3) b.classList.toggle('active', ['resid','sqm','svf'][i] === col);
+  sortAsc = currentSort === col ? !sortAsc : false;
+  currentSort = col;
+
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+  const cols = ['_','station_name','nearest_hub','sqm','resid','svf','elev_avg_m'];
+  const idx = cols.indexOf(col);
+  if (idx >= 0) document.querySelectorAll('thead th')[idx].classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+
+  document.querySelectorAll('.sort-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['resid','sqm','svf','min_dist_km'][i] === col);
   });
   render();
 }
 
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.ctrl-btn').forEach((b, i) => {
-    if (i >= 3) b.classList.toggle('active', ['pos','all'][i-3] === f);
-  });
-  render();
-}
-
+// ── レンダリング ─────────────────────────────────────
 function render() {
-  let rows = currentFilter === 'pos' ? allData.filter(d => d.resid > 0) : [...allData];
+  let rows = allData.filter(d => {
+    const svfPct = Math.round(d.svf * 100);
+    return d.min_dist_km >= F.dist.lo  && d.min_dist_km <= F.dist.hi
+        && d.sqm         >= F.sqm.lo   && d.sqm         <= F.sqm.hi
+        && d.resid       >= F.resid.lo && d.resid       <= F.resid.hi
+        && svfPct        >= F.svf.lo   && svfPct        <= F.svf.hi;
+  });
+
   rows.sort((a, b) => {
     const va = a[currentSort] ?? '', vb = b[currentSort] ?? '';
     return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
   });
 
   document.getElementById('count-note').textContent = `${rows.length} 駅`;
+  document.getElementById('no-results').style.display = rows.length ? 'none' : 'block';
 
   const tbody = document.getElementById('ranking-tbody');
   tbody.innerHTML = rows.map((d, i) => {
-    const residSign = d.resid >= 0 ? '+' : '';
-    const residClass = d.resid >= 0 ? 'resid-pos' : 'resid-neg';
-    const svfPct = Math.round((d.svf || 0) * 100);
+    const sign = d.resid >= 0 ? '+' : '';
+    const rc   = d.resid >= 0 ? 'resid-pos' : 'resid-neg';
+    const svfPct = Math.round(d.svf * 100);
     const svfColor = svfPct >= 90 ? '#34d399' : svfPct >= 75 ? '#60a5fa' : '#f97316';
-    return `
-      <tr>
-        <td class="td-rank ${i < 3 ? 'top3' : ''}">${i + 1}</td>
-        <td>
-          <div class="td-station">${d.station_name}</div>
-          <div class="td-line">${d.line_name}</div>
-        </td>
-        <td class="td-hub td-num">${d.nearest_hub}駅より<br>${d.min_dist_km} km</td>
-        <td class="td-num">${d.sqm}</td>
-        <td class="td-num"><span class="resid-val ${residClass}">${residSign}${d.resid}</span></td>
-        <td>
-          <div class="svf-wrap">
-            <div class="svf-bar-bg">
-              <div class="svf-bar-fill" style="width:${svfPct}%;background:${svfColor}"></div>
-            </div>
-            <span class="svf-num">${svfPct}%</span>
-          </div>
-        </td>
-        <td class="td-num">${d.elev_avg_m}</td>
-      </tr>
-    `;
+    return `<tr>
+      <td class="td-rank ${i < 3 ? 'top3' : ''}">${i + 1}</td>
+      <td>
+        <div class="td-station">${d.station_name}</div>
+        <div class="td-line">${d.line_name}</div>
+      </td>
+      <td class="td-num" style="font-size:0.72rem;color:#8b949e">${d.nearest_hub}駅<br>${d.min_dist_km} km</td>
+      <td class="td-num">${d.sqm}</td>
+      <td class="td-num"><span class="resid-val ${rc}">${sign}${d.resid}</span></td>
+      <td>
+        <div class="svf-wrap">
+          <div class="svf-bar-bg"><div class="svf-bar-fill" style="width:${svfPct}%;background:${svfColor}"></div></div>
+          <span class="svf-num">${svfPct}%</span>
+        </div>
+      </td>
+      <td class="td-num">${d.elev_avg_m}</td>
+    </tr>`;
   }).join('');
 }
 </script>
