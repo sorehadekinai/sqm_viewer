@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>東京圏 星空マップ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      background: #0d1117;
+      color: #f0f6fc;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 20% 30%, rgba(129,140,248,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 70%, rgba(52,211,153,0.06) 0%, transparent 60%);
+    }
+    .container {
+      position: relative; z-index: 1;
+      max-width: 560px; width: 100%;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8b949e;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #60a5fa, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #8b949e;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 400px) { .cards { grid-template-columns: 1fr; } }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px 18px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      text-align: left;
+    }
+    .card:hover {
+      border-color: #58a6ff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .card-icon { font-size: 1.6rem; }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f0f6fc;
+    }
+    .card-desc {
+      font-size: 0.75rem;
+      color: #8b949e;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(88,166,255,0.12);
+      color: #58a6ff;
+      border: 1px solid rgba(88,166,255,0.25);
+      width: fit-content;
+    }
+    .footer {
+      font-size: 0.72rem;
+      color: #484f58;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="container">
+  <div class="badge">Sky Quality Map · 東京圏</div>
+  <h1>星空残差マップ</h1>
+  <p class="subtitle">
+    SQM（空の明るさ）を距離・標高で補正した「残差」で、<br>
+    光害の影響を受けにくい穴場スポットを探せます。
+  </p>
+  <div class="cards">
+    <a class="card" href="residuals_map.html">
+      <div class="card-icon">🗺</div>
+      <div class="card-title">グリッドマップ</div>
+      <div class="card-desc">東京駅100km圏を格子状に集計。地形ごとの明暗パターンを把握できます。</div>
+      <div class="card-tag">東京駅起点</div>
+    </a>
+    <a class="card" href="station_residuals_map.html">
+      <div class="card-icon">🚉</div>
+      <div class="card-title">鉄道駅マップ</div>
+      <div class="card-desc">東京・新宿・渋谷・新橋100km圏の駅ごとに残差を表示。アクセス性も考慮できます。</div>
+      <div class="card-tag">4駅起点</div>
+    </a>
+  </div>
+  <p class="footer">データソース: Globe at Night (SQM) · SRTM (標高) · GTFS (駅)</p>
+</div>
+</body>
+</html>

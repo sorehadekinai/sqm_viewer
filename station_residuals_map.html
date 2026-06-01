@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鉄道駅 星空残差マップ — 東京4駅100km圏</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="map-common.css?v=20260531m"/>
+  <style>
+    body {
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      background: #0d1117;
+      color: #f0f6fc;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      flex-shrink: 0;
+      background: #161b22;
+      border-bottom: 1px solid rgba(240,246,252,0.1);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      flex-wrap: wrap;
+    }
+    header h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+    header p {
+      font-size: 0.78rem;
+      color: #8b949e;
+      font-weight: 300;
+      flex: 1;
+      min-width: 0;
+    }
+    header .back-btn {
+      font-size: 0.78rem;
+      color: #58a6ff;
+      text-decoration: none;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+    .mode-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .mode-label { font-size: 0.72rem; color: #8b949e; }
+    .mode-btn {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      border: 1px solid #30363d;
+      background: transparent;
+      color: #8b949e;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-btn.active {
+      background: rgba(88,166,255,0.15);
+      border-color: #58a6ff;
+      color: #f0f6fc;
+    }
+
+    #map { flex: 1; }
+
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      right: 10px;
+      z-index: 1000;
+      background: rgba(22,27,34,0.92);
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      min-width: 170px;
+    }
+    .legend h3 { font-size: 0.78rem; font-weight: 700; margin: 0 0 8px; color: #f0f6fc; }
+    .legend-bar { height: 12px; border-radius: 4px; margin-bottom: 4px; }
+    .legend-labels { display: flex; justify-content: space-between; color: #8b949e; font-size: 0.68rem; }
+    .legend-note { margin-top: 8px; color: #8b949e; font-size: 0.68rem; line-height: 1.6;
+                   border-top: 1px solid #30363d; padding-top: 6px; }
+
+    #status {
+      position: absolute;
+      top: 60px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22,27,34,0.92);
+      border: 1px solid #30363d;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      z-index: 1000;
+    }
+
+    /* ツールチップ */
+    .leaflet-tooltip {
+      background: rgba(13,17,23,0.97) !important;
+      border: 1px solid #30363d !important;
+      color: #f0f6fc !important;
+      font-size: 0.78rem !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+      padding: 8px 10px !important;
+      pointer-events: none !important;
+    }
+    .tt-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .tt-line { font-size: 0.72rem; color: #8b949e; margin-bottom: 6px; }
+    .tt-row { display: flex; justify-content: space-between; gap: 16px; font-size: 0.75rem; }
+    .tt-key { color: #8b949e; }
+    .tt-val { font-weight: 600; }
+    .tt-resid-pos { color: #60a5fa; }
+    .tt-resid-neg { color: #f87171; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>★ 鉄道駅 星空残差マップ</h1>
+  <p>東京・新宿・渋谷・新橋の最寄り駅から100km圏 — 距離で説明できない明暗</p>
+  <div class="mode-group">
+    <span class="mode-label">表示:</span>
+    <button class="mode-btn active" onclick="setMode('resid')">残差</button>
+    <button class="mode-btn" onclick="setMode('sqm')">SQM実値</button>
+    <button class="mode-btn" onclick="setMode('hub')">最寄りハブ</button>
+  </div>
+  <a class="back-btn" href="index.html">← トップ</a>
+</header>
+
+<div id="status">データ読み込み中...</div>
+<div id="map"></div>
+
+<div class="legend" id="legend">
+  <h3 id="legend-title">残差 (SQM)</h3>
+  <div class="legend-bar" id="legend-bar"></div>
+  <div class="legend-labels" id="legend-labels"></div>
+  <div class="legend-note" id="legend-note"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map', {
+  center: [35.72, 139.65],
+  zoom: 9,
+  preferCanvas: true,
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap © CARTO',
+  maxZoom: 18,
+}).addTo(map);
+
+// 100km圏サークル
+const HUB_COORDS = {
+  '東京': [35.681103, 139.767880],
+  '新宿': [35.689207, 139.698913],
+  '渋谷': [35.658551, 139.699863],
+  '新橋': [35.665583, 139.759587],
+};
+const HUB_COLORS_MAP = { '東京': '#f472b6', '新宿': '#60a5fa', '渋谷': '#34d399', '新橋': '#fbbf24' };
+
+Object.entries(HUB_COORDS).forEach(([name, latlng]) => {
+  L.circleMarker(latlng, {
+    radius: 10, color: HUB_COLORS_MAP[name], fillColor: HUB_COLORS_MAP[name],
+    fillOpacity: 0.9, weight: 2,
+  }).addTo(map).bindTooltip(name + '駅', { permanent: true, direction: 'top',
+    className: 'leaflet-tooltip', offset: [0, -8] });
+  L.circle(latlng, {
+    radius: 100000, color: HUB_COLORS_MAP[name], fill: false,
+    dashArray: '5 4', weight: 1, opacity: 0.25,
+  }).addTo(map);
+});
+
+// ── カラースケール ────────────────────────────────────────────
+function hexToRgb(hex) {
+  const n = parseInt(hex.replace('#',''), 16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function interpolateColor(stops, t) {
+  const n = stops.length - 1;
+  const i = Math.min(Math.floor(t * n), n - 1);
+  const f = t * n - i;
+  const c0 = hexToRgb(stops[i]), c1 = hexToRgb(stops[i+1]);
+  return `rgb(${Math.round(lerp(c0.r,c1.r,f))},${Math.round(lerp(c0.g,c1.g,f))},${Math.round(lerp(c0.b,c1.b,f))})`;
+}
+function clamp01(v, min, max) { return Math.max(0, Math.min(1, (v - min) / (max - min))); }
+
+const MODES = {
+  resid: {
+    title: '残差 (SQM)',
+    stops: ['#dc2626','#f97316','#fde68a','#e5e7eb','#93c5fd','#2563eb','#1e3a8a'],
+    min: -2.0, max: 2.0,
+    labels: ['-2.0', '-1.0', '  0', '+1.0', '+2.0'],
+    note: '🔵 青 = 距離の割に暗い（穴場の暗天地）<br>🔴 赤 = 距離の割に明るい（光害地）',
+    color: d => interpolateColor(MODES.resid.stops, clamp01(d.resid, -2.0, 2.0)),
+  },
+  sqm: {
+    title: 'SQM (mag/arcsec²)',
+    stops: ['#dc2626','#f97316','#facc15','#a3e635','#34d399','#22d3ee','#818cf8'],
+    min: 17.5, max: 21.5,
+    labels: ['17.5','18.5','19.5','20.5','21.5'],
+    note: '高いほど空が暗い（星が見えやすい）',
+    color: d => interpolateColor(MODES.sqm.stops, clamp01(d.sqm, 17.5, 21.5)),
+  },
+  hub: {
+    title: '最寄りハブ駅',
+    stops: null,
+    labels: ['東京','新宿','渋谷','新橋'],
+    note: '色はそれぞれの最寄りハブ駅を示す',
+    color: d => HUB_COLORS_MAP[d.nearest_hub] || '#888',
+  },
+};
+
+function updateLegend(mode) {
+  const m = MODES[mode];
+  document.getElementById('legend-title').textContent = m.title;
+  const bar = document.getElementById('legend-bar');
+  const lblDiv = document.getElementById('legend-labels');
+  document.getElementById('legend-note').innerHTML = m.note;
+
+  if (mode === 'hub') {
+    bar.style.background = 'none';
+    bar.innerHTML = Object.entries(HUB_COLORS_MAP).map(([k,v]) =>
+      `<span style="display:inline-block;width:25%;height:12px;background:${v};"></span>`
+    ).join('');
+    bar.style.display = 'flex';
+    lblDiv.innerHTML = Object.keys(HUB_COLORS_MAP).map(k =>
+      `<span style="color:${HUB_COLORS_MAP[k]}">${k}</span>`
+    ).join('');
+  } else {
+    bar.innerHTML = '';
+    bar.style.display = 'block';
+    bar.style.background = `linear-gradient(to right, ${m.stops.join(',')})`;
+    lblDiv.innerHTML = m.labels.map(l => `<span>${l}</span>`).join('');
+  }
+}
+
+// ── レイヤー管理 ─────────────────────────────────────────────
+let layerGroup = null;
+let allData = null;
+let currentMode = 'resid';
+
+function buildTooltip(d) {
+  const sign = d.resid >= 0 ? '+' : '';
+  const residClass = d.resid >= 0 ? 'tt-resid-pos' : 'tt-resid-neg';
+  return `
+    <div class="tt-name">${d.station_name}</div>
+    <div class="tt-line">${d.line_name}</div>
+    <div class="tt-row"><span class="tt-key">SQM</span><span class="tt-val">${d.sqm}</span></div>
+    <div class="tt-row"><span class="tt-key">距離</span><span class="tt-val">${d.min_dist_km} km (${d.nearest_hub}駅より)</span></div>
+    <div class="tt-row"><span class="tt-key">標高</span><span class="tt-val">${d.elev_avg_m} m</span></div>
+    <div class="tt-row"><span class="tt-key">残差</span><span class="tt-val ${residClass}">${sign}${d.resid}</span></div>
+  `;
+}
+
+function renderLayer(mode) {
+  if (!allData) return;
+  if (layerGroup) map.removeLayer(layerGroup);
+  layerGroup = L.layerGroup();
+  const colorFn = MODES[mode].color;
+
+  for (const d of allData) {
+    const color = colorFn(d);
+    const m = L.circleMarker([d.lat, d.lon], {
+      radius: 5,
+      color: '#000',
+      weight: 0.5,
+      fillColor: color,
+      fillOpacity: 0.85,
+    });
+    m.bindTooltip(buildTooltip(d), { sticky: true, direction: 'top', offset: [0, -4] });
+    layerGroup.addLayer(m);
+  }
+  layerGroup.addTo(map);
+  updateLegend(mode);
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['resid','sqm','hub'][i] === mode);
+  });
+  renderLayer(mode);
+}
+
+// ── データ読み込み ────────────────────────────────────────────
+const statusEl = document.getElementById('status');
+
+fetch('data/station_residuals.json.gz')
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); })
+  .then(buf => {
+    const ds = new DecompressionStream('gzip');
+    const w = ds.writable.getWriter();
+    w.write(new Uint8Array(buf)); w.close();
+    return new Response(ds.readable).text();
+  })
+  .then(text => {
+    allData = JSON.parse(text);
+    statusEl.remove();
+    renderLayer(currentMode);
+  })
+  .catch(err => {
+    statusEl.textContent = 'エラー: ' + err.message;
+    console.error(err);
+  });
+</script>
+</body>
+</html>
