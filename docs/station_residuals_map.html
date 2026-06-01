@@ -236,7 +236,7 @@ let currentBasemap = null;
 function setBasemap(key) {
   const def = BASEMAP_DEFS[key];
   if (currentBasemap) map.removeLayer(currentBasemap);
-  const opts = { maxZoom: 19, attribution: def.attr };
+  const opts = { maxZoom: 19, attribution: def.attr, opacity: basemapOpacity };
   if (def.subdomains !== undefined) opts.subdomains = def.subdomains;
   currentBasemap = L.tileLayer(def.url, opts).addTo(map);
   currentBasemap.bringToBack();
@@ -336,6 +336,7 @@ let layerGroup = null;
 let allData = null;
 let currentMode = 'resid';
 let currentOpacity = 0.85;
+let basemapOpacity = 1.0;
 
 function buildTooltip(d) {
   const sign = d.resid >= 0 ? '+' : '';
@@ -363,7 +364,7 @@ function renderLayer(mode) {
       color: 'rgba(0,0,0,0.4)',
       weight: 0.8,
       fillColor: color,
-      fillOpacity: currentOpacity,
+      fillOpacity: 0.85,
     });
     m.bindTooltip(buildTooltip(d), { sticky: true, direction: 'top', offset: [0, -6] });
     layerGroup.addLayer(m);
@@ -381,9 +382,9 @@ function setMode(mode) {
 }
 
 function setOpacity(val) {
-  currentOpacity = val / 100;
+  basemapOpacity = val / 100;
   document.getElementById('opacity-val').textContent = val + '%';
-  renderLayer(currentMode);
+  if (currentBasemap) currentBasemap.setOpacity(basemapOpacity);
 }
 
 // ── データ読み込み ───────────────────────────────────────────────
