@@ -103,66 +103,34 @@
     }
     .filter-label .f-unit { font-size: 0.6rem; color: #8b949e; font-weight: 400; }
 
-    /* 範囲スライダー */
-    .range-wrap {
-      position: relative;
-      height: 18px;
-      margin-bottom: 6px;
-    }
-    .range-track {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 100%;
-      height: 4px;
-      background: #30363d;
-      border-radius: 2px;
-    }
-    .range-fill {
-      position: absolute;
-      height: 100%;
-      background: #58a6ff;
-      border-radius: 2px;
-    }
-    .range-wrap input[type=range] {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      pointer-events: none;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    .range-wrap input[type=range].r-min { z-index: 3; }
-    .range-wrap input[type=range].r-max { z-index: 4; }
-    .range-wrap input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #58a6ff;
-      border: 2px solid #0d1117;
-      pointer-events: auto;
-      cursor: grab;
-    }
-    .range-wrap input[type=range]:active::-webkit-slider-thumb { cursor: grabbing; background: #79c0ff; }
-    .range-wrap input[type=range]::-moz-range-thumb {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #58a6ff;
-      border: 2px solid #0d1117;
-      pointer-events: auto;
-      cursor: grab;
-    }
-
-    .range-vals {
+    /* 数値入力 */
+    .num-inputs {
       display: flex;
-      justify-content: space-between;
-      font-size: 0.68rem;
-      font-variant-numeric: tabular-nums;
-      color: #8b949e;
+      align-items: center;
+      gap: 6px;
     }
-    .range-vals .active-val { color: #f0f6fc; font-weight: 600; }
+    .num-inputs input[type=number] {
+      width: 0;
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #f0f6fc;
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 5px 7px;
+      font-variant-numeric: tabular-nums;
+      -moz-appearance: textfield;
+      appearance: textfield;
+      transition: border-color 0.15s;
+    }
+    .num-inputs input[type=number]:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+    .num-inputs input[type=number]::-webkit-inner-spin-button,
+    .num-inputs input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .num-sep { font-size: 0.7rem; color: #484f58; flex-shrink: 0; }
 
     .filter-divider { border: none; border-top: 1px solid #21262d; margin: 4px 0 20px; }
 
@@ -265,14 +233,10 @@
       <!-- 距離 -->
       <div class="filter-block">
         <div class="filter-label">起点駅からの距離 <span class="f-unit">km</span></div>
-        <div class="range-wrap" id="wrap-dist">
-          <div class="range-track"><div class="range-fill" id="fill-dist"></div></div>
-          <input type="range" class="r-min" id="dist-min">
-          <input type="range" class="r-max" id="dist-max">
-        </div>
-        <div class="range-vals">
-          <span id="dist-lo" class="active-val"></span>
-          <span id="dist-hi" class="active-val"></span>
+        <div class="num-inputs">
+          <input type="number" id="dist-min" placeholder="最小">
+          <span class="num-sep">〜</span>
+          <input type="number" id="dist-max" placeholder="最大">
         </div>
       </div>
 
@@ -281,14 +245,10 @@
       <!-- SQM -->
       <div class="filter-block">
         <div class="filter-label">SQM <span class="f-unit">mag/arcsec²</span></div>
-        <div class="range-wrap" id="wrap-sqm">
-          <div class="range-track"><div class="range-fill" id="fill-sqm"></div></div>
-          <input type="range" class="r-min" id="sqm-min">
-          <input type="range" class="r-max" id="sqm-max">
-        </div>
-        <div class="range-vals">
-          <span id="sqm-lo" class="active-val"></span>
-          <span id="sqm-hi" class="active-val"></span>
+        <div class="num-inputs">
+          <input type="number" id="sqm-min" placeholder="最小" step="0.1">
+          <span class="num-sep">〜</span>
+          <input type="number" id="sqm-max" placeholder="最大" step="0.1">
         </div>
       </div>
 
@@ -297,14 +257,10 @@
       <!-- 残差 -->
       <div class="filter-block">
         <div class="filter-label">残差</div>
-        <div class="range-wrap" id="wrap-resid">
-          <div class="range-track"><div class="range-fill" id="fill-resid"></div></div>
-          <input type="range" class="r-min" id="resid-min">
-          <input type="range" class="r-max" id="resid-max">
-        </div>
-        <div class="range-vals">
-          <span id="resid-lo" class="active-val"></span>
-          <span id="resid-hi" class="active-val"></span>
+        <div class="num-inputs">
+          <input type="number" id="resid-min" placeholder="最小" step="0.1">
+          <span class="num-sep">〜</span>
+          <input type="number" id="resid-max" placeholder="最大" step="0.1">
         </div>
       </div>
 
@@ -313,14 +269,10 @@
       <!-- SVF -->
       <div class="filter-block">
         <div class="filter-label">空の開け具合 <span class="f-unit">SVF %</span></div>
-        <div class="range-wrap" id="wrap-svf">
-          <div class="range-track"><div class="range-fill" id="fill-svf"></div></div>
-          <input type="range" class="r-min" id="svf-min">
-          <input type="range" class="r-max" id="svf-max">
-        </div>
-        <div class="range-vals">
-          <span id="svf-lo" class="active-val"></span>
-          <span id="svf-hi" class="active-val"></span>
+        <div class="num-inputs">
+          <input type="number" id="svf-min" placeholder="最小" min="0" max="100">
+          <span class="num-sep">〜</span>
+          <input type="number" id="svf-max" placeholder="最大" min="0" max="100">
         </div>
       </div>
     </div>
@@ -399,63 +351,42 @@ fetch('data/station_residuals.json.gz?v=20260601')
   });
 
 // ── フィルター初期化 ─────────────────────────────────
+const DATA_RANGE = {};
+
 function initFilters() {
-  const dists = allData.map(d => d.min_dist_km);
-  const sqms  = allData.map(d => d.sqm);
-  const resids = allData.map(d => d.resid);
-  const svfs  = allData.map(d => Math.round(d.svf * 100));
+  const r = (arr, dec) => {
+    const f = 10 ** dec;
+    return [Math.floor(Math.min(...arr) * f) / f, Math.ceil(Math.max(...arr) * f) / f];
+  };
+  DATA_RANGE.dist  = r(allData.map(d => d.min_dist_km), 0);
+  DATA_RANGE.sqm   = r(allData.map(d => d.sqm), 1);
+  DATA_RANGE.resid = r(allData.map(d => d.resid), 1);
+  DATA_RANGE.svf   = r(allData.map(d => Math.round(d.svf * 100)), 0);
 
-  setupRange('dist',  Math.floor(Math.min(...dists)),  Math.ceil(Math.max(...dists)),  1,   v => v + ' km');
-  setupRange('sqm',   Math.floor(Math.min(...sqms)*10)/10, Math.ceil(Math.max(...sqms)*10)/10, 0.1, v => v.toFixed(1));
-  setupRange('resid', Math.floor(Math.min(...resids)*10)/10, Math.ceil(Math.max(...resids)*10)/10, 0.1, v => (v >= 0 ? '+' : '') + v.toFixed(1));
-  setupRange('svf',   Math.min(...svfs), Math.max(...svfs), 1, v => v + '%');
-}
-
-function setupRange(key, dataMin, dataMax, step, fmt) {
-  const rMin = document.getElementById(key + '-min');
-  const rMax = document.getElementById(key + '-max');
-  const fill = document.getElementById('fill-' + key);
-  const loEl = document.getElementById(key + '-lo');
-  const hiEl = document.getElementById(key + '-hi');
-
-  [rMin, rMax].forEach(r => {
-    r.min = dataMin; r.max = dataMax; r.step = step;
-  });
-  rMin.value = dataMin;
-  rMax.value = dataMax;
-  F[key].lo = dataMin;
-  F[key].hi = dataMax;
-
-  function update() {
-    let lo = parseFloat(rMin.value);
-    let hi = parseFloat(rMax.value);
-    if (lo > hi) {
-      if (this === rMin) { rMin.value = hi; lo = hi; }
-      else               { rMax.value = lo; hi = lo; }
-    }
-    const range = dataMax - dataMin || 1;
-    fill.style.left  = ((lo - dataMin) / range * 100) + '%';
-    fill.style.width = ((hi - lo)      / range * 100) + '%';
-    loEl.textContent = fmt(lo);
-    hiEl.textContent = fmt(hi);
+  ['dist','sqm','resid','svf'].forEach(key => {
+    const [lo, hi] = DATA_RANGE[key];
+    const iMin = document.getElementById(key + '-min');
+    const iMax = document.getElementById(key + '-max');
+    iMin.min = iMax.min = lo;
+    iMin.max = iMax.max = hi;
+    iMin.placeholder = lo;
+    iMax.placeholder = hi;
     F[key].lo = lo;
     F[key].hi = hi;
-    render();
-  }
-
-  rMin.addEventListener('input', update);
-  rMax.addEventListener('input', update);
-  update.call(rMin); // 初期描画
+    iMin.addEventListener('input', () => { F[key].lo = iMin.value === '' ? lo : parseFloat(iMin.value); render(); });
+    iMax.addEventListener('input', () => { F[key].hi = iMax.value === '' ? hi : parseFloat(iMax.value); render(); });
+  });
 }
 
 function resetAll() {
   ['dist','sqm','resid','svf'].forEach(key => {
-    const rMin = document.getElementById(key + '-min');
-    const rMax = document.getElementById(key + '-max');
-    rMin.value = rMin.min;
-    rMax.value = rMax.max;
-    rMin.dispatchEvent(new Event('input'));
+    const [lo, hi] = DATA_RANGE[key];
+    document.getElementById(key + '-min').value = '';
+    document.getElementById(key + '-max').value = '';
+    F[key].lo = lo;
+    F[key].hi = hi;
   });
+  render();
 }
 
 // ── ソート ──────────────────────────────────────────
